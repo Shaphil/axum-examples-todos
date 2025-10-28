@@ -3,6 +3,7 @@ use axum::Json;
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use serde_json::json;
 use uuid::Uuid;
 
 pub async fn todos_index(pagination: Query<Pagination>, State(db): State<Db>) -> impl IntoResponse {
@@ -55,4 +56,14 @@ pub async fn todos_update(
     db.write().unwrap().insert(todo.id, todo.clone());
 
     Ok(Json(todo))
+}
+
+pub async fn todos_delete(Path(id): Path<Uuid>, State(db): State<Db>) -> impl IntoResponse {
+    if db.write().unwrap().remove(&id).is_some() {
+        let message = format!("Todo {} has been deleted", id.clone());
+        (StatusCode::OK, Json(json!({"message": message})))
+    } else {
+        let message = "Todo not found";
+        (StatusCode::NOT_FOUND, Json(json!({"message": message})))
+    }
 }
