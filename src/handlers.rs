@@ -1,6 +1,6 @@
-use crate::models::{CreateTodo, Db, Pagination, Todo};
+use crate::models::{CreateTodo, Db, Pagination, Todo, UpdateTodo};
 use axum::Json;
-use axum::extract::{Query, State};
+use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use uuid::Uuid;
@@ -30,4 +30,29 @@ pub async fn todos_create(
 
     db.write().unwrap().insert(todo.id, todo.clone());
     (StatusCode::CREATED, Json(todo))
+}
+
+pub async fn todos_update(
+    Path(id): Path<Uuid>,
+    State(db): State<Db>,
+    Json(input): Json<UpdateTodo>,
+) -> Result<impl IntoResponse, StatusCode> {
+    let mut todo = db
+        .read()
+        .unwrap()
+        .get(&id)
+        .cloned()
+        .ok_or(StatusCode::NOT_FOUND)?;
+
+    if let Some(text) = input.text {
+        todo.text = text;
+    }
+
+    if let Some(completed) = input.completed {
+        todo.completed = completed;
+    }
+
+    db.write().unwrap().insert(todo.id, todo.clone());
+
+    Ok(Json(todo))
 }
