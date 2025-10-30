@@ -1,5 +1,5 @@
 [package]
-name = "todos"
+name = "axum-examples-todos"
 version = "0.1.0"
 edition = "2024"
 
