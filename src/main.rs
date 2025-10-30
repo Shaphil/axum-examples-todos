@@ -1,11 +1,9 @@
 mod handlers;
 mod models;
 
-use crate::handlers::{todos_delete, todos_update};
-use crate::models::Db;
 use axum::{routing::get, routing::patch, Router};
-use handlers::todos_create;
-use handlers::todos_index;
+use handlers::{todos_create, todos_delete, todos_index, todos_update};
+use models::Db;
 
 #[tokio::main]
 async fn main() {
