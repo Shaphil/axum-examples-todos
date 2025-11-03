@@ -1,10 +1,12 @@
 mod handlers;
+mod logging;
 mod models;
 
 use axum::error_handling::HandleErrorLayer;
 use axum::http::StatusCode;
-use axum::{routing::get, routing::patch, Router};
+use axum::{Router, routing::get, routing::patch};
 use handlers::{todos_create, todos_delete, todos_index, todos_update};
+use logging::init_log;
 use models::Db;
 use std::time::Duration;
 use tower::{BoxError, ServiceBuilder};
@@ -12,6 +14,7 @@ use tower_http::trace::TraceLayer;
 
 #[tokio::main]
 async fn main() {
+    init_log();
     let db = Db::default();
 
     let app = Router::new()
@@ -30,10 +33,12 @@ async fn main() {
                     }
                 }))
                 .timeout(Duration::from_secs(10))
+                // tracing and logging for http requests
                 .layer(TraceLayer::new_for_http())
                 .into_inner(),
         )
         .with_state(db);
+
     const HOST: &str = "127.0.0.1";
     const PORT: u16 = 3000;
     let address = format!("{}:{}", HOST, PORT);
